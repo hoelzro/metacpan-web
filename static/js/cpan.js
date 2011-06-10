@@ -36,6 +36,75 @@ function toggleTOC() {
     return false;
 }
 
+function getModuleName() {
+    var path       = window.location.pathname;
+    var components = path.split(/\//);
+    if(components[components.length - 1].length == 0) {
+        components.pop();
+    }
+    return components[components.length - 1];
+}
+
+function getAnnotationEditor(section) {
+    var editor = $('<div class="annotation-editor"><textarea></textarea><br /><input type="button" value="Submit" /><input type="button" value="Cancel" /></div>');
+
+    var textarea = $('textarea', editor);
+
+    $('input', editor).click(function() {
+        var me = $(this);
+
+        var value = me.val();
+
+        if(value == 'Submit') {
+            var annotation = textarea.val();
+
+            $.ajax({
+                url: '/annotation/',
+                type: 'POST',
+                success: function(data) {
+                    editor.detach();
+                    alert('Annotation added!');
+                },
+                error: function(_, error) {
+                    alert('FAIL: ' + error);
+                },
+                data: JSON.stringify({
+                    annotation : annotation,
+                    module     : getModuleName(),
+                    section    : section
+                }),
+                dataType: 'json',
+                contentType: 'application/json'
+            });
+        } else { // Cancel
+            editor.detach();
+        }
+    });
+
+    return editor;
+}
+
+function addAnnotationButtons() {
+    for(var i = 1; i <= 6; i++) {
+        var elements = $('h' + i);
+        elements.append(function() {
+            var that = $(this);
+
+            var img = $('<img width="16" height="16" src="/static/icons/annotate.png" style="display: none"/>');
+            img.click(function() {
+                var div = getAnnotationEditor(that.text());
+                that.append(div);
+            });
+            that.hover(function() {
+                img.show();
+            }, function() {
+                img.hide();
+            });
+            return img;
+        });
+    }
+}
+
 $(document).ready(function() {
     SyntaxHighlighter.defaults['quick-code'] = false;
     SyntaxHighlighter.highlight();
@@ -86,6 +155,8 @@ $(document).ready(function() {
           element.html(parts.join('…'));
         }
       }
+
+      addAnnotationButtons();
 });
 
 function searchForNearest() {

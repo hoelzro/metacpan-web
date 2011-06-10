@@ -492,3 +492,9 @@ code { font-family: monospace; }
 .rating-50 {
     background-position: 0px -190px;
 }
+
+.annotation-editor {
+    width: 200px;
+    height: 125px;
+    border: thin solid black;
+}
